@@ -43,7 +43,7 @@ export async function generateArticle({ topic, minWords, maxWords, difficulty, s
     The article should be no more than 2 paragraphs.
     The difficulty level should be ${difficultyLevels[difficulty]}.
     The style should be ${styleDescriptions[style]}.
-    Vocabulary used in sentences should be somewhat formal.
+    Vocabulary and expressions used in sentences should be somewhat formal.
     After the English article, provide a Japanese translation of the entire article.
     Format the output as follows:
     [ENGLISH]
