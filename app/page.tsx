@@ -71,7 +71,8 @@ export default function ArticleGenerator() {
   }
 
   const handleRegenerate = () => {
-    handleSubmit(new Event('submit') as any)
+    const syntheticEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>
+    handleSubmit(syntheticEvent)
   }
 
   return (
