@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { generateArticle } from './actions'
 
 type Difficulty = 'Easy' | 'Normal' | 'Intermediate' | 'Difficult' | 'Challenging'
-type Style = 'News like' | 'Blog like' | 'Essay like' | 'Story like' | 'Academic like' | 'Chat like'
+type Style = 'News like' | 'Blog like' | 'Essay like' | 'Story like' | 'Academic like' | 'Chat like' | 'Explanation like'
 
 interface HistoryItem {
   topic: string

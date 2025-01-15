@@ -8,7 +8,7 @@ const google = createGoogleGenerativeAI({
 })
 
 type Difficulty = 'Easy' | 'Normal' | 'Intermediate' | 'Difficult' | 'Challenging'
-type Style = 'News like' | 'Blog like' | 'Essay like' | 'Story like' | 'Academic like' | 'Chat like'
+type Style = 'News like' | 'Blog like' | 'Essay like' | 'Story like' | 'Academic like' | 'Chat like' | 'Explanation like'
 
 interface GenerateArticleParams {
   topic: string
@@ -34,7 +34,8 @@ export async function generateArticle({ topic, minWords, maxWords, difficulty, s
       'Essay like': 'トピックについて議論する',
       'Story like': 'トピックに基づいた物語を生成する',
       'Academic like': '論文のように事実を述べる',
-      'Chat like': '特定の人物間での会話のような文章'
+      'Chat like': '特定の人物間での会話のような文章',
+      'Explanation like': 'トピックについて説明する'
     }
 
     const prompt = `Generate an English article on the topic "${topic}". 
