@@ -126,7 +126,7 @@ export default function ArticleGenerator() {
                 <SelectValue placeholder="スタイルを選択" />
               </SelectTrigger>
               <SelectContent>
-                {['News like', 'Blog like', 'Essay like', 'Story like', 'Academic like', 'Chat like'].map((s) => (
+                {['News like', 'Blog like', 'Essay like', 'Story like', 'Academic like', 'Chat like', 'Explanation like'].map((s) => (
                   <SelectItem key={s} value={s}>
                     {s}
                   </SelectItem>
