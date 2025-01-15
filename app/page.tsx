@@ -1,101 +1,193 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { generateArticle } from './actions'
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+type Difficulty = 'Easy' | 'Normal' | 'Intermediate' | 'Difficult' | 'Challenging'
+type Style = 'News like' | 'Blog like' | 'Essay like' | 'Story like' | 'Academic like' | 'Chat like'
+
+interface HistoryItem {
+  topic: string
+  minWords: number
+  maxWords: number
+  difficulty: Difficulty
+  style: Style
+  english: string
+  japanese: string
+  timestamp: string
 }
+
+export default function ArticleGenerator() {
+  const [topic, setTopic] = useState('')
+  const [minWords, setMinWords] = useState(250)
+  const [maxWords, setMaxWords] = useState(300)
+  const [difficulty, setDifficulty] = useState<Difficulty>('Normal')
+  const [style, setStyle] = useState<Style>('News like')
+  const [article, setArticle] = useState({ english: '', japanese: '' })
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [history, setHistory] = useState<HistoryItem[]>([])
+
+  const handleWordCountChange = (value: string, setter: (value: number) => void) => {
+    const numValue = parseInt(value)
+    if (!isNaN(numValue) && numValue >= 0) {
+      setter(numValue)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (minWords > maxWords) {
+      setError('最小語数は最大語数より小さい値を指定してください')
+      return
+    }
+    if (minWords < 50 || maxWords > 1000) {
+      setError('語数は50から1000の間で指定してください')
+      return
+    }
+    setIsLoading(true)
+    setError(null)
+    const result = await generateArticle({ topic, minWords, maxWords, difficulty, style })
+    setIsLoading(false)
+    if (result.error) {
+      setError(result.error)
+    } else {
+      setArticle({ english: result.english, japanese: result.japanese })
+      setHistory(prev => [{
+        topic,
+        minWords,
+        maxWords,
+        difficulty,
+        style,
+        english: result.english,
+        japanese: result.japanese,
+        timestamp: new Date().toLocaleString('ja-JP')
+      }, ...prev])
+    }
+  }
+
+  const handleRegenerate = () => {
+    handleSubmit(new Event('submit') as any)
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>英語記事ジェネレーター</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="トピックを入力"
+              required
+            />
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={50}
+                max={1000}
+                value={minWords}
+                onChange={(e) => handleWordCountChange(e.target.value, setMinWords)}
+                className="w-24"
+              />
+              <span>-</span>
+              <Input
+                type="number"
+                min={50}
+                max={1000}
+                value={maxWords}
+                onChange={(e) => handleWordCountChange(e.target.value, setMaxWords)}
+                className="w-24"
+              />
+              <span className="text-sm text-gray-500">words</span>
+            </div>
+            <Select value={difficulty} onValueChange={(value: Difficulty) => setDifficulty(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="難易度を選択" />
+              </SelectTrigger>
+              <SelectContent>
+                {['Easy', 'Normal', 'Intermediate', 'Difficult', 'Challenging'].map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={style} onValueChange={(value: Style) => setStyle(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="スタイルを選択" />
+              </SelectTrigger>
+              <SelectContent>
+                {['News like', 'Blog like', 'Essay like', 'Story like', 'Academic like', 'Chat like'].map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? '生成中...' : '記事を生成'}
+            </Button>
+          </form>
+
+          {error && (
+            <p className="text-red-500 mt-4">{error}</p>
+          )}
+
+          {article.english && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold mb-2">生成された記事</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium">英語</h3>
+                  <p className="whitespace-pre-wrap">{article.english}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium">日本語訳</h3>
+                  <p className="whitespace-pre-wrap">{article.japanese}</p>
+                </div>
+              </div>
+              <Button onClick={handleRegenerate} className="mt-4">
+                再生成
+              </Button>
+            </div>
+          )}
+
+          {history.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold mb-2">生成履歴</h2>
+              <div className="space-y-6">
+                {history.map((item, index) => (
+                  <div key={index} className="border-t pt-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="font-medium">トピック {item.topic}</p>
+                        <p className="text-sm text-gray-500">
+                          {item.difficulty} / {item.style} / {item.minWords}-{item.maxWords} words
+                        </p>
+                      </div>
+                      <p className="text-sm text-gray-500">{item.timestamp}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="whitespace-pre-wrap">{item.english}</p>
+                      <p className="text-gray-600 whitespace-pre-wrap">{item.japanese}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
