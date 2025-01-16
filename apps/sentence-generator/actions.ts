@@ -8,17 +8,13 @@ const google = createGoogleGenerativeAI({
 })
 
 type Difficulty = 'Easy' | 'Normal' | 'Intermediate' | 'Difficult' | 'Challenging'
-type Style = 'News like' | 'Blog like' | 'Essay like' | 'Story like' | 'Academic like' | 'Chat like' | 'Explanation like'
 
-interface GenerateArticleParams {
-  topic: string
-  minWords: number
-  maxWords: number
+interface GenerateSentencesParams {
+  input: string
   difficulty: Difficulty
-  style: Style
 }
 
-export async function generateArticle({ topic, minWords, maxWords, difficulty, style }: GenerateArticleParams) {
+export async function generateSentences({ input, difficulty }: GenerateSentencesParams) {
   try {
     const difficultyLevels = {
       'Easy': '小学生向け',
@@ -28,26 +24,12 @@ export async function generateArticle({ topic, minWords, maxWords, difficulty, s
       'Challenging': '大学中級レベル〜'
     }
 
-    const styleDescriptions = {
-      'News like': 'ニュース記事のように事実にフォーカスする',
-      'Blog like': 'ブログ記事のように事実とその感想にフォーカスする',
-      'Essay like': 'トピックについて議論する',
-      'Story like': 'トピックに基づいた物語を生成する',
-      'Academic like': '論文のように事実を述べる',
-      'Chat like': '特定の人物間での会話のような文章',
-      'Explanation like': 'トピックについて説明する'
-    }
-
-    const prompt = `Generate an English article on the topic "${topic}". 
-    The article should be between ${minWords} and ${maxWords} words.
-    The article should be no more than 2 paragraphs.
+    const prompt = `Generate 10 English sentences that include the word or phrase "${input}". 
     The difficulty level should be ${difficultyLevels[difficulty]}.
-    The style should be ${styleDescriptions[style]}.
-    Vocabulary and expressions used in sentences should be somewhat formal.
-    After the English article, provide a Japanese translation of the entire article.
+    After each English sentence, provide a Japanese translation.
     Format the output as follows:
     [ENGLISH]
-    (English article here)
+    (English sentence here)
     [/ENGLISH]
     [JAPANESE]
     (Japanese translation here)
@@ -58,20 +40,21 @@ export async function generateArticle({ topic, minWords, maxWords, difficulty, s
       prompt: prompt,
     })
 
-    const englishMatch = text.match(/\[ENGLISH\]([\s\S]*?)\[\/ENGLISH\]/);
-    const japaneseMatch = text.match(/\[JAPANESE\]([\s\S]*?)\[\/JAPANESE\]/);
+    const sentences: { english: string, japanese: string }[] = []
+    const englishMatches = text.match(/\[ENGLISH\]([\s\S]*?)\[\/ENGLISH\]/g)
+    const japaneseMatches = text.match(/\[JAPANESE\]([\s\S]*?)\[\/JAPANESE\]/g)
 
-    const englishArticle = englishMatch ? englishMatch[1].trim() : '';
-    const japaneseTranslation = japaneseMatch ? japaneseMatch[1].trim() : '';
-
-    return { 
-      english: englishArticle, 
-      japanese: japaneseTranslation, 
-      error: null 
+    if (englishMatches && japaneseMatches && englishMatches.length === japaneseMatches.length) {
+      for (let i = 0; i < englishMatches.length; i++) {
+        const englishSentence = englishMatches[i].match(/\[ENGLISH\]([\s\S]*?)\[\/ENGLISH\]/)?.[1].trim() || ''
+        const japaneseTranslation = japaneseMatches[i].match(/\[JAPANESE\]([\\s\S]*?)\[\/JAPANESE\]/)?.[1].trim() || ''
+        sentences.push({ english: englishSentence, japanese: japaneseTranslation })
+      }
     }
+
+    return { sentences, error: null }
   } catch (error) {
-    console.error('Error generating article:', error)
-    return { english: '', japanese: '', error: 'Failed to generate article. Please try again.' }
+    console.error('Error generating sentences:', error)
+    return { sentences: [], error: 'Failed to generate sentences. Please try again.' }
   }
 }
-
