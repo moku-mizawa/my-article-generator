@@ -26,6 +26,7 @@ export async function generateSentences({ input, difficulty }: GenerateSentences
 
     const prompt = `Generate 10 English sentences that include the word or phrase "${input}". 
     The difficulty level should be ${difficultyLevels[difficulty]}.
+    Each sentence should be based on fundamental English grammar rules and vocabulary.
     After each English sentence, provide a Japanese translation.
     Format the output as follows:
     [ENGLISH]
@@ -47,7 +48,7 @@ export async function generateSentences({ input, difficulty }: GenerateSentences
     if (englishMatches && japaneseMatches && englishMatches.length === japaneseMatches.length) {
       for (let i = 0; i < englishMatches.length; i++) {
         const englishSentence = englishMatches[i].match(/\[ENGLISH\]([\s\S]*?)\[\/ENGLISH\]/)?.[1].trim() || ''
-        const japaneseTranslation = japaneseMatches[i].match(/\[JAPANESE\]([\\s\S]*?)\[\/JAPANESE\]/)?.[1].trim() || ''
+        const japaneseTranslation = japaneseMatches[i].match(/\[JAPANESE\]([\s\S]*?)\[\/JAPANESE\]/)?.[1].trim() || ''
         sentences.push({ english: englishSentence, japanese: japaneseTranslation })
       }
     }

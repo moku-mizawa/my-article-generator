@@ -20,6 +20,12 @@ export default function SentenceGenerator() {
   const [sentences, setSentences] = useState<Sentence[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [history, setHistory] = useState<{
+    input: string
+    difficulty: Difficulty
+    sentences: Sentence[]
+    timestamp: Date
+  }[]>([])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,6 +37,13 @@ export default function SentenceGenerator() {
       setError(result.error)
     } else {
       setSentences(result.sentences)
+      // 履歴に追加
+      setHistory(prev => [...prev, {
+        input,
+        difficulty,
+        sentences: result.sentences,
+        timestamp: new Date()
+      }])
     }
   }
 
@@ -85,8 +98,36 @@ export default function SentenceGenerator() {
               </div>
             </div>
           )}
+          {history.length > 0 && (
+  <div className="mt-8">
+    <h2 className="text-lg font-semibold mb-4">生成履歴</h2>
+    <div className="space-y-6">
+      {history.map((item, historyIndex) => (
+        <div key={historyIndex} className="border p-4 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <p className="font-medium">検索ワード: {item.input}</p>
+            <p className="text-sm text-gray-500">
+              {item.timestamp.toLocaleString()}
+            </p>
+          </div>
+          <p className="text-sm text-gray-600 mb-2">難易度: {item.difficulty}</p>
+          <div className="space-y-3">
+            {item.sentences.map((sentence, sentenceIndex) => (
+              <div key={sentenceIndex} className="pl-4 border-l-2">
+                <p>{sentence.english}</p>
+                <p className="text-gray-600">{sentence.japanese}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
         </CardContent>
       </Card>
     </div>
   )
 }
+

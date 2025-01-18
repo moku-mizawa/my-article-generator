@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function Home() {
+export default function Homecomponent() {
   return (
     <div>
       <h1>Welcome to My Article Generator</h1>
@@ -11,6 +11,9 @@ export default function Home() {
           </li>
           <li>
             <Link href="/sentence-generator">Sentence Generator</Link>
+          </li>
+          <li>
+            <Link href="/sentence-shuffle">Sentence Shuffle</Link>
           </li>
         </ul>
       </nav>
