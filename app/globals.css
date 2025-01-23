@@ -32,7 +32,7 @@ nav ul {
 }
 
 nav li {
-  display: inline;
+  display: list-item;
   margin-right: 10px;
 }
 

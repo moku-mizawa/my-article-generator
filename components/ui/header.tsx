@@ -16,6 +16,9 @@ export default function Header() {
         <Link href="/sentence-shuffle" legacyBehavior>
           <a className="text-lg font-semibold">Sentence Shuffle</a>
         </Link>
+        <Link href="/math-problem-generator" legacyBehavior>
+        <a className="text-lg font-semibold">Math Problem Generator</a>
+        </Link>
       </nav>
     </header>
   );
